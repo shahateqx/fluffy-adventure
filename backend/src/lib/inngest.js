@@ -5,7 +5,7 @@ import User from "../models/User.js";
 export const inngest = new Inngest({ id: "talent-aq" });
 
 const syncUser = inngest.createFunction(
-  { id: "sync-user", trigger: { event: "user.created" } },
+  { id: "sync-user", trigger: { event: "clerk/user.created" } },
   async ({ event }) => {
     await connectDB();
     const { id, email_addresses, first_name, last_name, image_url } = event.data;
@@ -21,7 +21,7 @@ const syncUser = inngest.createFunction(
 );
 
 const deleteUserFromDB = inngest.createFunction(
-  { id: "delete-user-from-db", trigger: { event: "user.deleted" } },
+  { id: "delete-user-from-db", trigger: { event: "clerk/user.deleted" } },
   async ({ event }) => {
     await connectDB();
     const { id } = event.data;
@@ -31,7 +31,7 @@ const deleteUserFromDB = inngest.createFunction(
 );
 
 const updateUserInDB = inngest.createFunction(
-  { id: "update-user-in-db", trigger: { event: "user.updated" } },
+  { id: "update-user-in-db", trigger: { event: "clerk/user.updated" } },
   async ({ event }) => {
     await connectDB();
     const { id, email_addresses, first_name, last_name, image_url } = event.data;
