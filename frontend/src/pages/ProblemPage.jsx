@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { PROBLEMS } from "../data/problems";
 import Navbar from "../components/Navbar";
 
-import { Panel, Group, PanelResizeHandle } from "react-resizable-panels";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
 import OutputPanel from "../components/OutputPanel";
 import CodeEditorPanel from "../components/CodeEditorPanel";
@@ -24,6 +24,7 @@ function ProblemPage() {
 
     const currentProblem = PROBLEMS[currentProblemId];
 
+    // update problem when URL param changes
     useEffect(() => {
         if (id && PROBLEMS[id]) {
             setCurrentProblemId(id);
@@ -42,19 +43,31 @@ function ProblemPage() {
     const handleProblemChange = (newProblemId) => navigate(`/problem/${newProblemId}`);
 
     const triggerConfetti = () => {
-        confetti({ particleCount: 80, spread: 250, origin: { x: 0.2, y: 0.6 } });
-        confetti({ particleCount: 80, spread: 250, origin: { x: 0.8, y: 0.6 } });
+        confetti({
+            particleCount: 80,
+            spread: 250,
+            origin: { x: 0.2, y: 0.6 },
+        });
+
+        confetti({
+            particleCount: 80,
+            spread: 250,
+            origin: { x: 0.8, y: 0.6 },
+        });
     };
 
     const normalizeOutput = (output) => {
+        // normalize output for comparison (trim whitespace, handle different spacing)
         return output
             .trim()
             .split("\n")
             .map((line) =>
                 line
                     .trim()
+                    // remove spaces after [ and before ]
                     .replace(/\[\s+/g, "[")
                     .replace(/\s+\]/g, "]")
+                    // normalize spaces around commas to single space after comma
                     .replace(/\s*,\s*/g, ",")
             )
             .filter((line) => line.length > 0)
@@ -64,6 +77,7 @@ function ProblemPage() {
     const checkIfTestsPassed = (actualOutput, expectedOutput) => {
         const normalizedActual = normalizeOutput(actualOutput);
         const normalizedExpected = normalizeOutput(expectedOutput);
+
         return normalizedActual == normalizedExpected;
     };
 
@@ -75,9 +89,12 @@ function ProblemPage() {
         setOutput(result);
         setIsRunning(false);
 
+        // check if code executed successfully and matches expected output
+
         if (result.success) {
             const expectedOutput = currentProblem.expectedOutput[selectedLanguage];
             const testsPassed = checkIfTestsPassed(result.output, expectedOutput);
+
             if (testsPassed) {
                 triggerConfetti();
                 toast.success("All tests passed! Great job!");
@@ -92,8 +109,10 @@ function ProblemPage() {
     return (
         <div className="h-screen bg-base-100 flex flex-col">
             <Navbar />
+
             <div className="flex-1">
-                <Group direction="horizontal">
+                <PanelGroup direction="horizontal">
+                    {/* left panel- problem desc */}
                     <Panel defaultSize={40} minSize={30}>
                         <ProblemDescription
                             problem={currentProblem}
@@ -102,9 +121,13 @@ function ProblemPage() {
                             allProblems={Object.values(PROBLEMS)}
                         />
                     </Panel>
+
                     <PanelResizeHandle className="w-2 bg-base-300 hover:bg-primary transition-colors cursor-col-resize" />
+
+                    {/* right panel- code editor & output */}
                     <Panel defaultSize={60} minSize={30}>
-                        <Group direction="vertical">
+                        <PanelGroup direction="vertical">
+                            {/* Top panel - Code editor */}
                             <Panel defaultSize={70} minSize={30}>
                                 <CodeEditorPanel
                                     selectedLanguage={selectedLanguage}
@@ -115,13 +138,17 @@ function ProblemPage() {
                                     onRunCode={handleRunCode}
                                 />
                             </Panel>
+
                             <PanelResizeHandle className="h-2 bg-base-300 hover:bg-primary transition-colors cursor-row-resize" />
+
+                            {/* Bottom panel - Output Panel*/}
+
                             <Panel defaultSize={30} minSize={30}>
                                 <OutputPanel output={output} />
                             </Panel>
-                        </Group>
+                        </PanelGroup>
                     </Panel>
-                </Group>
+                </PanelGroup>
             </div>
         </div>
     );
