@@ -25,6 +25,7 @@
     "react-resizable-panels": "^4.11.0",
     "react-router": "^7.15.0",
     "stream-chat": "^9.43.1",
+    "stream-chat-react": "^14.1.0",
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
