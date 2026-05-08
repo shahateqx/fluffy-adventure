@@ -16,7 +16,11 @@ export async function createSession(req, res) {
 
         await Promise.all([
             streamClient.video.call("default", callId).getOrCreate({
-                data: { created_by_id: clerkId, custom: { problem, difficulty, sessionId: session._id.toString() } },
+                data: {
+                    created_by_id: clerkId,
+                    members: [{ user_id: clerkId, role: "host" }],
+                    custom: { problem, difficulty, sessionId: session._id.toString() },
+                },
             }),
             chatClient.channel("messaging", callId, { name: `${problem} Session`, created_by_id: clerkId, members: [clerkId] }).create(),
         ]);
@@ -79,7 +83,12 @@ export async function joinSession(req, res) {
 
         session.participant = userId;
         await session.save();
-        await chatClient.channel("messaging", session.callId).addMembers([clerkId]);
+        await Promise.all([
+            chatClient.channel("messaging", session.callId).addMembers([clerkId]),
+            streamClient.video.call("default", session.callId).updateCallMembers({
+                update_members: [{ user_id: clerkId, role: "call_member" }],
+            }),
+        ]);
 
         res.status(200).json({ session });
     } catch (error) {
